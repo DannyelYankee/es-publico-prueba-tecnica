@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  db-orders:
+    image: postgres:16.1
+    container_name: db-orders
+    restart: always
+    volumes:
+      - ./sql/create_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: 'orders'
+      POSTGRES_USER: 'daniel'
+      POSTGRES_PASSWORD: 'daniel'
+    ports:
+      - '5432:5432'
+
+volumes:
+  pgdata:

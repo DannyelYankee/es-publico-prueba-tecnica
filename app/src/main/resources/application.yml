@@ -1,0 +1,7 @@
+spring:
+   datasource:
+      username: daniel
+      url: jdbc:postgresql://localhost:5432/orders
+      password: daniel
+   application:
+      name: app
