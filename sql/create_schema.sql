@@ -1,5 +1,5 @@
 CREATE TABLE if NOT EXISTS orders (
-    uuid UUID PRIMARY KEY,             
+    uuid VARCHAR(255) PRIMARY KEY NOT NULL,             
     id BIGINT NOT NULL,                
     region VARCHAR(255) NOT NULL,      
     country VARCHAR(255) NOT NULL,     

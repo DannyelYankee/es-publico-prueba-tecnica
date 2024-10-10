@@ -1,7 +1,28 @@
 spring:
+   port: 8080
    datasource:
       username: daniel
       url: jdbc:postgresql://localhost:5432/orders
       password: daniel
    application:
       name: app
+
+management:
+   endpoints:
+      web:
+         exposure:
+            include: prometheus
+   metrics:
+      export:
+         prometheus:
+            enabled: true
+
+global:
+   scrape_interval: 10s 
+
+scrape_configs:
+-  job_name: spring-boot-actuator
+   metrics_path: /actuator/prometheus
+   static_configs:
+   -  targets:
+      - localhost:8080

@@ -15,5 +15,29 @@ services:
     ports:
       - '5432:5432'
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    volumes:
+      - ./metric_files/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - '9090:9090'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana # Asegurarse de que el volumen se define correctamente
+    depends_on:
+      - prometheus
+
 volumes:
   pgdata:
+  grafana-data: # Definir el volumen aquí
