@@ -5,15 +5,17 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.esPublico.app.domain.exceptions.ExternalApiException;
 import com.esPublico.app.domain.models.Order;
 import com.esPublico.app.domain.repositories.OrderRepository;
 import com.esPublico.app.domain.services.ExternalApiService;
 import com.esPublico.app.transfers.dtos.OrderPageDTO;
+import com.esPublico.app.transfers.dtos.PageLinksDTO;
 import com.esPublico.app.transfers.mappers.OrderMapper;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 @AllArgsConstructor
@@ -23,44 +25,45 @@ public class ExternalApiServiceImpl implements ExternalApiService {
 	private final OrderRepository orderRepository;
 	private final OrderMapper orderMapper;
 	private static final int BATCH_SIZE = 1000;
+	private static final int MAX_CONCURRENCY = 10;
 
 	@Override
 	public void fetchAndProcessRecords() {
-		String nextPageUrl = "/orders?page=1&max-per-page=" + BATCH_SIZE;
+		final String initialUrl = "/orders?page=1&max-per-page=" + BATCH_SIZE;
 
-		while (nextPageUrl != null) {
-			try {
-				final OrderPageDTO response = fetchOrdersFromApi(nextPageUrl);
-				nextPageUrl = processResponse(response);
-			} catch (final Exception e) {
-				log.error("Error fetching records from API", e);
-				throw new ExternalApiException("Error fetching records from API", e);
-			}
-		}
+		Flux.just(initialUrl).expand(this::getNextPageUrl).flatMap(this::fetchOrdersFromApi, MAX_CONCURRENCY)
+				.flatMap(this::processResponse, MAX_CONCURRENCY)
+				.onErrorContinue((e, url) -> log.error("Error fetching records from API: {}", url, e)).blockLast();
 	}
 
-	private OrderPageDTO fetchOrdersFromApi(String nextPageUrl) {
-		return webClient.get().uri(nextPageUrl).retrieve().bodyToMono(OrderPageDTO.class).block();
+	private Mono<String> getNextPageUrl(String currentPageUrl) {
+		return Mono.justOrEmpty(currentPageUrl)
+				.flatMap(url -> webClient.get().uri(url).retrieve().bodyToMono(OrderPageDTO.class))
+				.map(OrderPageDTO::getLinks).map(PageLinksDTO::getNext).switchIfEmpty(Mono.empty());
 	}
 
-	private String processResponse(OrderPageDTO response) {
+	private Mono<OrderPageDTO> fetchOrdersFromApi(String pageUrl) {
+		return webClient.get().uri(pageUrl).retrieve().bodyToMono(OrderPageDTO.class);
+	}
+
+	private Mono<Void> processResponse(OrderPageDTO response) {
 		if ((response != null) && !response.getContent().isEmpty()) {
 			final List<Order> orders = orderMapper.toEntities(response.getContent());
-			saveOrders(orders);
-			return response.getLinks().getNext();
+			return saveOrders(orders).then();
 		}
-		// finish if there's no more pages
-		return null;
+		return Mono.empty();
 	}
 
-	private void saveOrders(List<Order> orders) {
-		try {
-			orderRepository.saveAll(orders);
-			log.info("Successfully saved batch of {} orders.", orders.size());
-		} catch (final Exception e) {
-			log.error("Error saving batch, proceeding with individual save.", e);
-			saveOrdersIndividually(orders);
-		}
+	private Mono<Void> saveOrders(List<Order> orders) {
+		return Mono.fromRunnable(() -> {
+			try {
+				orderRepository.saveAll(orders);
+				log.info("Successfully saved batch of {} orders.", orders.size());
+			} catch (final Exception e) {
+				log.error("Error saving batch, proceeding with individual save.", e);
+				saveOrdersIndividually(orders);
+			}
+		});
 	}
 
 	private void saveOrdersIndividually(List<Order> orders) {
@@ -72,5 +75,4 @@ public class ExternalApiServiceImpl implements ExternalApiService {
 			}
 		});
 	}
-
 }

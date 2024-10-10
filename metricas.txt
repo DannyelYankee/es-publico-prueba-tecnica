@@ -1,0 +1,24 @@
+1.- Intento:
+  - 4 hilos
+  - 6m 33s
+  - 66% uso maximo de memoria
+
+2.- Intento:
+  - 5 hilos
+  - 5m 58s
+  - 69% uso maximo de memoria
+
+3.- Intento:
+  - 12 hilos
+  - 4m 6s
+  - 80% uso maximo de memoria
+
+4.- Intento:
+  - 10 hilos
+  - 3m 53s
+  - 77-78% uso maximo de memoria
+
+5.- Intento:
+  - 9 hilos
+  - 4m 12s
+  - 76% uso maximo de memoria
