@@ -9,8 +9,12 @@ import com.esPublico.app.domain.models.Order;
 import com.esPublico.app.transfers.dtos.OrderDTO;
 import com.esPublico.app.utils.DateUtils;
 
+import lombok.AllArgsConstructor;
+
 @Component
+@AllArgsConstructor
 public class OrderMapper {
+	private final DateUtils dateUtils;
 
 	public List<Order> toEntities(List<OrderDTO> dtos) {
 		return dtos.stream().map(this::toEntity).collect(Collectors.toList());
@@ -25,8 +29,8 @@ public class OrderMapper {
 		order.setItemType(dto.getItemType());
 		order.setSalesChannel(dto.getSalesChannel());
 		order.setPriority(dto.getPriority());
-		order.setOrderDate(DateUtils.parseStringToLocalDate(dto.getDate()));
-		order.setShipDate(DateUtils.parseStringToLocalDate(dto.getShipDate()));
+		order.setOrderDate(dateUtils.parseStringToLocalDate(dto.getDate()));
+		order.setShipDate(dateUtils.parseStringToLocalDate(dto.getShipDate()));
 		order.setUnitsSold(dto.getUnitsSold());
 		order.setUnitPrice(dto.getUnitPrice());
 		order.setUnitCost(dto.getUnitCost());

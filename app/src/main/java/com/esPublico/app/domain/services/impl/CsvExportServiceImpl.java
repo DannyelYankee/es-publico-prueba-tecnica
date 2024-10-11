@@ -11,11 +11,15 @@ import com.esPublico.app.domain.models.Order;
 import com.esPublico.app.domain.services.CsvExportService;
 import com.esPublico.app.utils.DateUtils;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class CsvExportServiceImpl implements CsvExportService {
+	private final DateUtils dateUtils;
+
 	@Override
 	public byte[] exportOrdersToCsv(List<Order> orders) {
 		log.info("Starts exportOrdersToCsv");
@@ -40,11 +44,11 @@ public class CsvExportServiceImpl implements CsvExportService {
 
 	private String orderToCsv(Order order) {
 		return String.join(",", String.valueOf(order.getId()), String.valueOf(order.getPriority()),
-				DateUtils.formatLocalDate(order.getOrderDate()), order.getRegion() != null ? order.getRegion() : "",
+				dateUtils.formatLocalDate(order.getOrderDate()), order.getRegion() != null ? order.getRegion() : "",
 				order.getCountry() != null ? order.getCountry() : "",
 				order.getItemType() != null ? order.getItemType() : "",
 				order.getSalesChannel() != null ? order.getSalesChannel() : "",
-				DateUtils.formatLocalDate(order.getShipDate()), String.valueOf(order.getUnitsSold()),
+				dateUtils.formatLocalDate(order.getShipDate()), String.valueOf(order.getUnitsSold()),
 				order.getUnitPrice() != null ? order.getUnitPrice().toString() : "0.00",
 				order.getUnitCost() != null ? order.getUnitCost().toString() : "0.00",
 				order.getTotalRevenue() != null ? order.getTotalRevenue().toString() : "0.00",
