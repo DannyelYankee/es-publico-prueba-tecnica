@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.esPublico.app.domain.exceptions.ExternalApiException;
-import com.esPublico.app.domain.services.ExternalApiService;
+import com.esPublico.app.domain.services.ImportService;
+import com.esPublico.app.domain.services.OrderService;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,17 +19,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImportController {
 
-	private final ExternalApiService externalApiService;
+	private final ImportService importService;
+	private final OrderService orderService;
 
 	@PostMapping("/orders")
-	public ResponseEntity<String> importOrders() {
+	public ResponseEntity<?> importAndResumeOrders() {
 		try {
-			externalApiService.fetchAndProcessRecords();
-			return ResponseEntity.ok("Orders imported successfully");
+			importService.importOrders();
+			final var summary = orderService.getOrderSummary();
+
+			log.info("importAndResumeOrders finished successfully");
+			return ResponseEntity.ok(summary);
+
 		} catch (final ExternalApiException e) {
-			log.error("Failed to import orders", e);
+
+			log.error("Failed to import and resume orders", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body("Failed to import orders: " + e.getMessage());
+
 		}
 	}
 }
