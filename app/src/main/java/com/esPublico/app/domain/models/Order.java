@@ -32,6 +32,7 @@ public class Order {
 	private BigDecimal unitCost;
 	private BigDecimal totalRevenue;
 	private BigDecimal totalCost;
+	private BigDecimal totalProfit;
 	private String selfLink;
 
 }

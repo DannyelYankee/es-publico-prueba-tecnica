@@ -32,6 +32,7 @@ public class OrderMapper {
 		order.setUnitCost(dto.getUnitCost());
 		order.setTotalRevenue(dto.getTotalRevenue());
 		order.setTotalCost(dto.getTotalCost());
+		order.setTotalProfit(dto.getTotalProfit());
 		order.setSelfLink(dto.getLinks().getSelf());
 		return order;
 	}
