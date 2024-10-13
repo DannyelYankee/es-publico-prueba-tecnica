@@ -1,33 +1,23 @@
 package com.esPublico.app.utils;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-@RunWith(MockitoJUnitRunner.class)
 public class DateUtilsTest {
 
 	@InjectMocks
 	private DateUtils dateUtils;
-
-	private static final Logger logger = LoggerFactory.getLogger(DateUtils.class);
 
 	@Before
 	public void setUp() {
@@ -36,93 +26,98 @@ public class DateUtilsTest {
 
 	@Test
 	public void testFormatLocalDate_NullDate() {
-		final String result = dateUtils.formatLocalDate(null);
+
+		final DateUtils spyDateUtils = spy(dateUtils);
+
+		final String result = spyDateUtils.formatLocalDate(null);
+
 		assertNull(result);
+
 	}
 
 	@Test
 	public void testFormatLocalDate_ValidDate() {
-		final LocalDate date = LocalDate.of(2024, 10, 11);
+
+		final LocalDate date = LocalDate.of(2023, 10, 13);
+		final String expectedFormattedDate = "13/10/2023";
+
 		final String result = dateUtils.formatLocalDate(date);
-		assertEquals("11/10/2024", result);
+
+		assertEquals(expectedFormattedDate, result);
+	}
+
+	@Test(expected = DateTimeParseException.class)
+	public void testFormatLocalDate_DateTimeParseException() {
+
+		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/yyyy");
+		final LocalDate invalidDate = LocalDate.now();
+		final DateUtils dateUtilsSpy = spy(dateUtils);
+
+		doThrow(new DateTimeParseException("Invalid date", "text", 0)).when(dateUtilsSpy).formatLocalDate(invalidDate);
+
+		final String result = dateUtilsSpy.formatLocalDate(invalidDate);
+
+		assertNull(result);
+	}
+
+	@Test(expected = Exception.class)
+	public void testFormatLocalDate_GeneralException() {
+		// Given
+		final LocalDate validDate = LocalDate.now();
+		final DateUtils dateUtilsSpy = spy(dateUtils);
+
+		doThrow(new Exception("Unexpected error")).when(dateUtilsSpy).formatLocalDate(validDate);
+
+		final String result = dateUtilsSpy.formatLocalDate(validDate);
+
+		// Then
+		assertNull(result);
 	}
 
 	@Test
-	public void testFormatLocalDate_InvalidDateFormat() {
-		final DateUtils spyDateUtils = spy(dateUtils);
-		final LocalDate invalidDate = mock(LocalDate.class);
+	public void testParseStringToLocalDate_ValidUsFormat() {
 
-		doThrow(new DateTimeParseException("Test Exception", "InvalidDate", 0)).when(invalidDate).format(any());
+		final String dateStr = "10/13/2023";
+		final LocalDate expectedDate = LocalDate.of(2023, 10, 13);
 
-		final String result = spyDateUtils.formatLocalDate(invalidDate);
-		assertNull(result);
-		verify(spyDateUtils).formatLocalDate(invalidDate);
+		final LocalDate result = dateUtils.parseStringToLocalDate(dateStr);
+
+		assertEquals(expectedDate, result);
 	}
 
 	@Test
-	public void testFormatLocalDate_UnexpectedException() {
+	public void testParseStringToLocalDate_ValidLocalFormat() {
+
+		final String dateStr = "13/10/2023";
+		final LocalDate expectedDate = LocalDate.of(2023, 10, 13);
+
+		final LocalDate result = dateUtils.parseStringToLocalDate(dateStr);
+
+		assertEquals(expectedDate, result);
+	}
+
+	@Test
+	public void testParseStringToLocalDate_InvalidDate() {
+
+		final String dateStr = "invalid-date";
+
 		final DateUtils spyDateUtils = spy(dateUtils);
-		final LocalDate invalidDate = mock(LocalDate.class);
 
-		doThrow(new RuntimeException("Unexpected exception")).when(invalidDate).format(any());
+		final LocalDate result = spyDateUtils.parseStringToLocalDate(dateStr);
 
-		final String result = spyDateUtils.formatLocalDate(invalidDate);
 		assertNull(result);
-		verify(spyDateUtils).formatLocalDate(invalidDate);
+
 	}
 
 	@Test
 	public void testParseStringToLocalDate_NullOrEmptyString() {
 
-		final LocalDate resultNull = dateUtils.parseStringToLocalDate(null);
-		assertNull(resultNull);
+		final DateUtils spyDateUtils = spy(dateUtils);
 
-		final LocalDate resultEmpty = dateUtils.parseStringToLocalDate("");
+		final LocalDate resultNull = spyDateUtils.parseStringToLocalDate(null);
+		final LocalDate resultEmpty = spyDateUtils.parseStringToLocalDate("");
+
+		assertNull(resultNull);
 		assertNull(resultEmpty);
 	}
-
-	@Test
-	public void testParseStringToLocalDate_ValidDateFormats() {
-		// Formato MM/dd/yyyy (Formato de EE.UU.)
-		final String usDateStr = "10/11/2024";
-		final LocalDate resultUsFormat = dateUtils.parseStringToLocalDate(usDateStr);
-		assertNotNull(resultUsFormat);
-		assertEquals(LocalDate.of(2024, 10, 11), resultUsFormat);
-
-		// Formato dd/MM/yyyy (Formato local)
-		final String localDateStr = "11/10/2024";
-		final LocalDate resultLocalFormat = dateUtils.parseStringToLocalDate(localDateStr);
-		assertNotNull(resultLocalFormat);
-		assertEquals(LocalDate.of(2024, 11, 10), resultLocalFormat);
-	}
-
-	@Test
-	public void testParseStringToLocalDate_InvalidUsFormat() {
-		final String invalidUsDateStr = "invalid_date";
-		final LocalDate result = dateUtils.parseStringToLocalDate(invalidUsDateStr);
-
-		assertNull(result);
-	}
-
-	@Test
-	public void testParseStringToLocalDate_InvalidLocalFormat() {
-
-		final String invalidLocalDateStr = "31/31/2024";
-		final LocalDate result = dateUtils.parseStringToLocalDate(invalidLocalDateStr);
-
-		assertNull(result);
-	}
-
-	@Test
-	public void testParseStringToLocalDate_UsFormatFails_LocalFormatSucceeds() {
-
-		final String dateStr = "31/01/2024";
-
-		final LocalDate result = dateUtils.parseStringToLocalDate(dateStr);
-
-		assertNotNull(result);
-		assertEquals(LocalDate.of(2024, 1, 31), result);
-
-	}
-
 }

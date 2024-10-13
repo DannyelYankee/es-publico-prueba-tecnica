@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class DateUtils {
+	private final DateTimeFormatter localDateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy");
 
 	public String formatLocalDate(LocalDate date) {
 		if (date == null) {
@@ -19,7 +20,6 @@ public class DateUtils {
 		}
 
 		try {
-			final var localDateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy");
 			return date.format(localDateFormatter);
 		} catch (final DateTimeParseException e) {
 			log.error("DateUtils.formatLocalDate: Error formatting date {} to a string", date, e);
