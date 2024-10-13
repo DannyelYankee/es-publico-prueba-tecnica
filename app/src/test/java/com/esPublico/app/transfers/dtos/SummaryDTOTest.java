@@ -14,7 +14,7 @@ public class SummaryDTOTest {
 
 		final SummaryDTO summaryDTO = new SummaryDTO(value, total);
 
-		assertEquals("summaryValue", summaryDTO.getValue());
+		assertEquals("value", summaryDTO.getValue());
 		assertEquals(Long.valueOf(100L), summaryDTO.getTotal());
 	}
 

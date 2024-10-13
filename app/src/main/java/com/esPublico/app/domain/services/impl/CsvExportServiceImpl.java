@@ -39,6 +39,9 @@ public class CsvExportServiceImpl implements CsvExportService {
 		} catch (final IOException e) {
 			log.error("Error during the csv exportation", e);
 			return new byte[0];
+		} catch (final Exception e) {
+			log.error("Error during the csv exportation", e);
+			return new byte[0];
 		}
 	}
 
