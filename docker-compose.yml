@@ -38,6 +38,15 @@ services:
     depends_on:
       - prometheus
 
+  es-publico-app:
+    image: es-publico-app:latest
+    container_name: es-publico-app
+    restart: always
+    depends_on:
+      - db-orders
+    ports:
+      - '8080:8080'
+
 volumes:
   pgdata:
-  grafana-data: # Definir el volumen aquí
+  grafana-data:

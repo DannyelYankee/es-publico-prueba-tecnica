@@ -2,7 +2,7 @@ spring:
    port: 8080
    datasource:
       username: daniel
-      url: jdbc:postgresql://localhost:5432/orders
+      url: jdbc:postgresql://db-orders:5432/orders
       password: daniel
    application:
       name: app

@@ -81,6 +81,8 @@ public class OrderServiceImpl implements OrderService {
 
 		final List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
 
+		log.info("SQl {} executed succesfully", sql);
+
 		final Map<String, List<SummaryDTO>> groupedResults = new HashMap<>();
 
 		for (final Map<String, Object> row : results) {
@@ -93,6 +95,7 @@ public class OrderServiceImpl implements OrderService {
 			groupedResults.get(category).add(new SummaryDTO(value, total));
 		}
 
+		log.info("getOrderSummary finished successfully");
 		return groupedResults;
 	}
 
