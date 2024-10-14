@@ -39,7 +39,7 @@ services:
       - prometheus
 
   es-publico-app:
-    image: es-publico-app:latest
+    image: dannyelyankee/es-publico-app:latest
     container_name: es-publico-app
     restart: always
     depends_on:
