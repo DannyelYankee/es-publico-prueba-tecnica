@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class DateUtils {
-	private final DateTimeFormatter localDateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy");
+	private final DateTimeFormatter localDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
 	public String formatLocalDate(LocalDate date) {
 		if (date == null) {
